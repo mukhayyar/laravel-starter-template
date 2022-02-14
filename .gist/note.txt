@@ -1,0 +1,23 @@
+$validator = Validator::make($request->all(), [
+            'title' => 'required|max:250|unique:App\Models\Movie,title',
+            'thumbnail' => 'required|mimes:jpg,jpeg,png',
+            'description' => 'required'
+        ]);
+
+        if($validator->fails()){
+            return redirect()->route('dashboard.movies.create')->withErrors($validator)->withInput();
+        } else {
+            if($request->hasFile('thumbnail'))
+            {
+                $image = $request->file('thumbnail');
+                $filename = time().$image->getClientOriginalName();
+                Storage::disk('local')->putFileAs('public/movie', $image, $filename);
+                $movie->thumbnail = $filename;
+            }
+            $movie->title = $request->input('title');
+            $movie->description = $request->input('description');
+            $movie->save();
+            return redirect()->route('dashboard.movies');
+        }
+
+php artisan storage:link
